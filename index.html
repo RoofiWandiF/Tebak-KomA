@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tebak Teman Sekelas — TI USU 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.15);
+    --accent: #7c6dfa;
+    --accent2: #a78bfa;
+    --accent-glow: rgba(124,109,250,0.25);
+    --text: #f0f0f5;
+    --text2: #8888aa;
+    --text3: #555570;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 20%, rgba(124,109,250,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 80% 80%, rgba(167,139,250,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeDown 0.6s ease both;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124,109,250,0.12);
+    border: 1px solid rgba(124,109,250,0.25);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--accent2);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 14px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  /* Progress section */
+  .q-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .cand-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .cand-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s ease infinite;
+  }
+
+  .progress-wrap {
+    background: var(--surface2);
+    border-radius: 100px;
+    height: 3px;
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Question */
+  .question-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.45;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .opt-btn:hover {
+    background: rgba(124,109,250,0.1);
+    border-color: rgba(124,109,250,0.4);
+    color: #fff;
+    transform: translateX(4px);
+  }
+  .opt-btn:hover .opt-arrow { opacity: 1; transform: translateX(0); }
+  .opt-arrow {
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all 0.2s ease;
+    color: var(--accent2);
+    font-size: 16px;
+  }
+  .opt-btn:active { transform: scale(0.99) translateX(4px); }
+
+  /* Back button */
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+  }
+  .btn-back:hover {
+    color: var(--text2);
+    border-color: var(--border-hover);
+    background: var(--surface2);
+    transform: translateX(-2px);
+  }
+  .btn-back:hover .back-arrow { transform: translateX(-2px); }
+  .btn-back:active { transform: scale(0.98); }
+  .btn-back:disabled {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .back-arrow {
+    font-size: 13px;
+    transition: transform 0.2s ease;
+    line-height: 1;
+  }
+  .meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Start screen */
+  .start-icon {
+    width: 72px; height: 72px;
+    border-radius: 20px;
+    background: rgba(124,109,250,0.12);
+    border: 1px solid rgba(124,109,250,0.25);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 32px;
+  }
+  .start-desc {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 1.75rem;
+    text-align: center;
+  }
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .stat-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* Primary button */
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 24px var(--accent-glow);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--accent-glow); }
+  .btn-primary:active { transform: scale(0.99); }
+
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border-hover);
+    border-radius: 12px;
+    padding: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s ease;
+  }
+  .btn-secondary:hover { color: var(--text); border-color: var(--border-hover); background: var(--surface2); }
+
+  /* Result */
+  .result-avatar {
+    width: 68px; height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 24px var(--accent-glow);
+  }
+  .result-label {
+    font-size: 11px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Syne', sans-serif;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .result-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .result-nim {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 1.25rem;
+  }
+  .result-fact {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  .result-fact strong { color: var(--text); font-weight: 500; }
+
+  .fail-emoji { font-size: 48px; text-align: center; margin-bottom: 1rem; }
+  .fail-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .fail-desc { font-size: 13px; color: var(--text2); text-align: center; margin-bottom: 1.5rem; line-height: 1.6; }
+
+  /* Screens */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.92); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .pop { animation: pop 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-badge">✦ TI USU Angkatan 2024</div>
+    <h1>Tebak Teman Sekelas</h1>
+    <p>Siapa yang kamu pikirkan?</p>
+  </div>
+
+  <!-- Start Screen -->
+  <div id="screen-start" class="screen active">
+    <div class="card" style="text-align:center;">
+      <div class="start-icon" style="background:none;border:none;width:72px;height:72px;">
+        <img src="foto/logo.png" alt="Logo" style="width:72px;height:72px;object-fit:contain;border-radius:16px;box-shadow:0 0 0 6px rgba(124,109,250,0.15), 0 4px 24px var(--accent-glow);"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <span style="display:none;font-size:32px;">🧠</span>
+      </div>
+      <p class="start-desc">Pikirkan satu teman sekelas kamu dari <strong>KOM A</strong>. Aku akan mencoba menebaknya hanya dengan beberapa pertanyaan!</p>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-num">41</div>
+          <div class="stat-label">Total karakter</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">11</div>
+          <div class="stat-label">Atribut deteksi</div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="startGame()">Mulai Tebak-Tebakan →</button>
+    </div>
+  </div>
+
+  <!-- Question Screen -->
+  <div id="screen-question" class="screen">
+    <div class="card">
+      <div class="meta-row">
+        <div class="q-num" id="q-num">Pertanyaan 1</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn-back" id="btn-back" onclick="goBack()" disabled>
+            <span class="back-arrow">←</span> Kembali
+          </button>
+          <div class="cand-badge">
+            <div class="dot"></div>
+            <span id="cand-count">41 kandidat</span>
+          </div>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="question-text" id="q-text">Loading...</div>
+      <div class="options" id="options-container"></div>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="screen-result" class="screen">
+    <div class="card pop" id="result-card">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+const characters = [
+  {nama:"M. RIZKY FADILLAH",nim:"241402001",gender:"cowo",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"nomor 1 angkatan 24"},
+  {nama:"MUHAMMAD WAHYU FADHILLA",nim:"241402004",gender:"cowo",agama:"islam",kelas:"a1",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"dipanggil gogoy"},
+  {nama:"FAREL REZA SAPUTRA",nim:"241402007",gender:"cowo",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"dipanggil kingsato"},
+  {nama:"FIRDAUSZY MELATI SYAHPUTRI",nim:"241402010",gender:"cewe",agama:"islam",kelas:"a1",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:true,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"berakhiran nim 010"},
+  {nama:"FERI GUNAWAN",nim:"241402013",gender:"cowo",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"komting kom A"},
+  {nama:"SOFWAN AL HAWARI",nim:"241402016",gender:"cowo",agama:"islam",kelas:"a1",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"marbot masjid"},
+  {nama:"BILL RANDA SILANGIT",nim:"241402019",gender:"cowo",agama:"kristen/katolik",kelas:"a1",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"bos iphone"},
+  {nama:"EKI NICTA GINA BOANG MANALU",nim:"241402022",gender:"cewe",agama:"kristen/katolik",kelas:"a1",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"bendahara kom A"},
+  {nama:"SYARIFAH CHADIJAH",nim:"241402025",gender:"cewe",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:false,itlg:true,jilbab:true,kacamata:true,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"biasa dipanggil Ipeh"},
+  {nama:"QIARA AZQIYA",nim:"241402028",gender:"cewe",agama:"islam",kelas:"a1",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:true,kacamata:false,chindo:false,nim_bawah_030:true,nim_ratusan:false,khusus:"nempel terus sama Chrisa"},
+  {nama:"RANIA KHAIRUNNISA",nim:"241402031",gender:"cewe",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:true,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"berakhiran nim 031"},
+  {nama:"PANJI BRIANT DEPARI",nim:"241402034",gender:"cowo",agama:"kristen/katolik",kelas:"a1",nim_paritas:"genap",bermarga:true,itlg:true,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"dimarahi prof Opim karena mengajarinya"},
+  {nama:"SUTANTO",nim:"241402037",gender:"cowo",agama:"buddha",kelas:"a1",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:true,nim_bawah_030:false,nim_ratusan:false,khusus:"citam alias cina hitam"},
+  {nama:"DAVID WIJAYA SIBARANI",nim:"241402040",gender:"cowo",agama:"buddha",kelas:"a1",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:true,nim_bawah_030:false,nim_ratusan:false,khusus:"cina tapi batak"},
+  {nama:"NAULIA SITUMEANG",nim:"241402051",gender:"cewe",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:true,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"bermarga Situmeang"},
+  {nama:"WINSON MARYOGI PARDEDE",nim:"241402054",gender:"cowo",agama:"kristen/katolik",kelas:"a1",nim_paritas:"genap",bermarga:true,itlg:true,jilbab:false,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"dijuluki Yogi laboratorium"},
+  {nama:"CHRISA GRANT BANUAREA",nim:"241402057",gender:"cewe",agama:"kristen/katolik",kelas:"a1",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:false,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"nempel terus sama Qiara"},
+  {nama:"MARIALISE NOVITA BR ARITONANG",nim:"241402064",gender:"cewe",agama:"kristen/katolik",kelas:"a1",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"bermarga Aritonang"},
+  {nama:"NAZWA KHAIRUNNISA MANALU",nim:"241402067",gender:"cewe",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:true,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"bermarga Manalu"},
+  {nama:"ROOFI WANDI FADLURRAHMAN",nim:"241402071",gender:"cowo",agama:"islam",kelas:"a1",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"merilis lagu berjudul 'You Will Go'"},
+  {nama:"DARREN WANGSA",nim:"241402074",gender:"cowo",agama:"buddha",kelas:"a2",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:false,kacamata:true,chindo:true,nim_bawah_030:false,nim_ratusan:false,khusus:"mirip Nobita"},
+  {nama:"DELRICO LIE",nim:"241402077",gender:"cowo",agama:"buddha",kelas:"a2",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:true,chindo:true,nim_bawah_030:false,nim_ratusan:false,khusus:"dijuluki prof matdis"},
+  {nama:"MUHAMMAD ARIEF HUDA",nim:"241402080",gender:"cowo",agama:"islam",kelas:"a2",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"dijuluki Bapak Tanker Kom A"},
+  {nama:"MUHAMMAD ARIF WICAKSONO",nim:"241402087",gender:"cowo",agama:"islam",kelas:"a2",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"mirip pak seniman"},
+  {nama:"THYMOTI TEGUH SIREGAR",nim:"241402090",gender:"cowo",agama:"kristen/katolik",kelas:"a2",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"suka genit ke teman cowo"},
+  {nama:"SANNY LIE",nim:"241402093",gender:"cewe",agama:"kristen/katolik",kelas:"a2",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:true,chindo:true,nim_bawah_030:false,nim_ratusan:false,khusus:"koordinator PDD PMB TI USU 26"},
+  {nama:"ANDRIAN JAMES NANDANA SIREGAR",nim:"241402096",gender:"cowo",agama:"kristen/katolik",kelas:"a2",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"kosnya dijajah Sutanto"},
+  {nama:"EVAN MARKUS TAFONAO",nim:"241402098",gender:"cowo",agama:"kristen/katolik",kelas:"a2",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:false,khusus:"suaranya berat dan sexy"},
+  {nama:"REZEKI ANANTA EFENDI",nim:"241402100",gender:"cowo",agama:"islam",kelas:"a2",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:false,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"dijuluki raja fc"},
+  {nama:"WINANDA SINURAT",nim:"241402103",gender:"cewe",agama:"kristen/katolik",kelas:"a2",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"bermarga Sinurat"},
+  {nama:"ADE NOVITA SIMATUPANG",nim:"241402106",gender:"cewe",agama:"kristen/katolik",kelas:"a2",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"dipanggil Ajeng oleh Roofi"},
+  {nama:"MUHAMMAD DAFFA ADRIAN NST",nim:"241402109",gender:"cowo",agama:"islam",kelas:"a2",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"bermarga Nasution"},
+  {nama:"GILBERT SITINJAK",nim:"241402112",gender:"cowo",agama:"kristen/katolik",kelas:"a2",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"alumni Methodist Binjai"},
+  {nama:"AGNES SRI RAHAYU SIHOMBING",nim:"241402115",gender:"cewe",agama:"kristen/katolik",kelas:"a2",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"bermarga Sihombing"},
+  {nama:"MUHAMMAD FAIZ PASARIBU",nim:"241402118",gender:"cowo",agama:"islam",kelas:"a2",nim_paritas:"genap",bermarga:true,itlg:false,jilbab:false,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"dijuluki manusia PDD"},
+  {nama:"NAHYA SYAKIRA KETAREN",nim:"241402121",gender:"cewe",agama:"islam",kelas:"a2",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:true,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"koordinator humas PMB TI USU 26"},
+  {nama:"SITI ALYA REVANO",nim:"241402124",gender:"cewe",agama:"islam",kelas:"a2",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"tidak suka dipanggil 'siti'"},
+  {nama:"ARIEL DANIEL SINAGA",nim:"241402127",gender:"cowo",agama:"kristen/katolik",kelas:"a2",nim_paritas:"ganjil",bermarga:true,itlg:false,jilbab:false,kacamata:true,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"bermarga Sinaga"},
+  {nama:"ANDREAS",nim:"241402130",gender:"cowo",agama:"buddha",kelas:"a2",nim_paritas:"genap",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:true,nim_bawah_030:false,nim_ratusan:true,khusus:"berduaan terus sama Delrico"},
+  {nama:"ALYA MUFTHIA ROITO",nim:"241402133",gender:"cewe",agama:"islam",kelas:"a2",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:true,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"memiliki nama akhir Roito"},
+  {nama:"AFIF FADHLURRAHMAN",nim:"241402137",gender:"cowo",agama:"islam",kelas:"a2",nim_paritas:"ganjil",bermarga:false,itlg:false,jilbab:false,kacamata:false,chindo:false,nim_bawah_030:false,nim_ratusan:true,khusus:"sering berkata 'izinnnnnn'"},
+];
+
+const ATTRS = [
+  {key:"kelas",label:"Orangnya masuk kelas mana?",opts:["a1","a2"],display:v=>v.toUpperCase()},
+  {key:"gender",label:"Jenis kelaminnya?",opts:["cowo","cewe"],display:v=>v==="cowo"?"Laki-laki":"Perempuan"},
+  {key:"agama",label:"Agamanya?",opts:["islam","kristen/katolik","buddha"],display:v=>v.charAt(0).toUpperCase()+v.slice(1)},
+  {key:"nim_paritas",label:"NIM-nya ganjil atau genap?",opts:["ganjil","genap"],display:v=>v.charAt(0).toUpperCase()+v.slice(1)},
+  {key:"nim_bawah_030",label:"Akhiran NIM-nya di bawah 030?",opts:[true,false],display:v=>v?"Ya":"Tidak"},
+  {key:"nim_ratusan",label:"Akhiran NIM-nya ratusan (100 ke atas)?",opts:[true,false],display:v=>v?"Ya":"Tidak"},
+  {key:"bermarga",label:"Punya marga Sumatera Utara?",opts:[true,false],display:v=>v?"Ya":"Tidak"},
+  {key:"chindo",label:"Dia Chindo (Cina-Indonesia)?",opts:[true,false],display:v=>v?"Ya":"Tidak"},
+  {key:"itlg",label:"Dia termasuk ITLG?",opts:[true,false],display:v=>v?"Ya":"Tidak"},
+  {key:"jilbab",label:"Dia memakai jilbab?",opts:[true,false],display:v=>v?"Ya":"Tidak"},
+  {key:"kacamata",label:"Dia memakai kacamata?",opts:[true,false],display:v=>v?"Ya":"Tidak"},
+];
+
+let candidates=[], asked=new Set(), qNum=0, khususIdx=0;
+
+let history = [];
+
+function saveHistory(type, extra) {
+  history.push({
+    candidates: [...candidates],
+    asked: new Set(asked),
+    qNum: qNum,
+    khususIdx: khususIdx,
+    type: type,        
+    extra: extra       
+  });
+  updateBackBtn();
+}
+
+function goBack() {
+  if (history.length === 0) return;
+  const prev = history.pop();
+  candidates  = prev.candidates;
+  asked       = prev.asked;
+  qNum        = prev.qNum;
+  khususIdx   = prev.khususIdx;
+  updateBackBtn();
+  // Re-render the previous question state
+  if (prev.type === 'attr') {
+    renderAttrQuestion(prev.extra);
+  } else if (prev.type === 'khusus') {
+    renderKhususSingle(candidates[0]);
+  } else if (prev.type === 'khususList') {
+    renderKhususList(prev.extra);
+  }
+  updateProgress();
+}
+
+function updateBackBtn() {
+  const btn = document.getElementById('btn-back');
+  if (btn) btn.disabled = history.length === 0;
+}
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function startGame(){
+  candidates=[...characters]; asked=new Set(); qNum=0; khususIdx=0;
+  history = [];
+  showScreen("screen-question");
+  nextQuestion();
+}
+
+function getBestAttr(){
+  let best=null, bestScore=Infinity;
+  for(const a of ATTRS){
+    if(asked.has(a.key)) continue;
+    const unique=new Set(candidates.map(c=>c[a.key]));
+    if(unique.size<=1) continue;
+    for(const v of a.opts){
+      const match=candidates.filter(c=>c[a.key]===v).length;
+      const score=Math.abs(match-(candidates.length-match));
+      if(score<bestScore){bestScore=score;best=a;}
+    }
+  }
+  return best;
+}
+
+function nextQuestion(){
+  updateProgress();
+  if(candidates.length===0){showFail();return;}
+  if(candidates.length===1){askKhusus(candidates[0]);return;}
+  const attr=getBestAttr();
+  if(!attr){startKhususMode();return;}
+  asked.add(attr.key);
+  qNum++;
+  renderAttrQuestion(attr.key);
+}
+
+function renderAttrQuestion(attrKey) {
+  const attr = ATTRS.find(a => a.key === attrKey);
+  const opts = attr.opts.filter(v => candidates.some(c => c[attr.key] === v));
+  document.getElementById("q-num").textContent = "Pertanyaan ke-" + qNum;
+  document.getElementById("q-text").textContent = attr.label;
+  document.getElementById("cand-count").textContent = candidates.length + " kandidat";
+  updateProgress();
+  const container = document.getElementById("options-container");
+  container.innerHTML = "";
+  opts.forEach(v => {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.innerHTML = `<span>${attr.display(v)}</span><span class="opt-arrow">→</span>`;
+    btn.onclick = () => {
+      saveHistory('attr', attrKey);
+      candidates = candidates.filter(c => c[attr.key] === v);
+      nextQuestion();
+    };
+    container.appendChild(btn);
+  });
+  updateBackBtn();
+}
+
+function startKhususMode(){ khususIdx = 0; askKhususList(); }
+
+function askKhususList(){
+  if(khususIdx >= candidates.length){ showFail(); return; }
+  renderKhususList(khususIdx);
+}
+
+function renderKhususList(idx) {
+  const c = candidates[idx];
+  qNum++;
+  document.getElementById("q-num").textContent = "Pertanyaan ke-" + qNum;
+  document.getElementById("q-text").textContent = "Apakah orangnya " + c.khusus + "?";
+  document.getElementById("cand-count").textContent = candidates.length + " kandidat";
+  updateProgress();
+  const container = document.getElementById("options-container");
+  container.innerHTML = "";
+  ["Ya", "Tidak"].forEach(v => {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.innerHTML = `<span>${v}</span><span class="opt-arrow">→</span>`;
+    btn.onclick = () => {
+      saveHistory('khususList', idx);
+      if (v === "Ya") { candidates = [c]; showResult(); }
+      else { khususIdx++; askKhususList(); }
+    };
+    container.appendChild(btn);
+  });
+  updateBackBtn();
+}
+
+function askKhusus(c){
+  qNum++;
+  renderKhususSingle(c);
+}
+
+function renderKhususSingle(c) {
+  document.getElementById("q-num").textContent = "Pertanyaan terakhir";
+  document.getElementById("q-text").textContent = "Apakah orangnya " + c.khusus + "?";
+  document.getElementById("cand-count").textContent = "1 kandidat";
+  updateProgress();
+  const container = document.getElementById("options-container");
+  container.innerHTML = "";
+  ["Ya", "Tidak"].forEach(v => {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.innerHTML = `<span>${v}</span><span class="opt-arrow">→</span>`;
+    btn.onclick = () => {
+      saveHistory('khusus', null);
+      v === "Ya" ? showResult() : showFail();
+    };
+    container.appendChild(btn);
+  });
+  updateBackBtn();
+}
+
+function updateProgress(){
+  const pct=Math.round(((characters.length-candidates.length)/characters.length)*100);
+  document.getElementById("progress-fill").style.width=pct+"%";
+}
+
+function getInitials(n){return n.split(" ").slice(0,2).map(w=>w[0]).join("");}
+
+function showResult(){
+  const c=candidates[0];
+  showScreen("screen-result");
+
+  const fotoPath = "foto/" + c.nim + ".png";
+  const inisial = getInitials(c.nama);
+
+  document.getElementById("result-card").innerHTML=`
+    <div style="text-align:center;">
+      <div style="font-size:11px;color:var(--accent2);text-transform:uppercase;letter-spacing:.1em;font-family:'Syne',sans-serif;margin-bottom:.75rem;">✦ Aku tahu siapa orangnya!</div>
+
+      <div style="position:relative;width:110px;height:110px;margin:0 auto 1.25rem;">
+        <img id="foto-result" src="${fotoPath}" alt="${c.nama}"
+          style="width:110px;height:110px;border-radius:50%;object-fit:cover;
+                 border:3px solid var(--accent);
+                 box-shadow:0 0 0 6px rgba(124,109,250,0.15), 0 4px 24px var(--accent-glow);
+                 display:block;"
+          onerror="
+            this.style.display='none';
+            document.getElementById('avatar-fallback').style.display='flex';
+          "
+        />
+        <div id="avatar-fallback"
+          style="display:none;width:110px;height:110px;border-radius:50%;
+                 background:linear-gradient(135deg,var(--accent),var(--accent2));
+                 align-items:center;justify-content:center;
+                 font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:#fff;
+                 box-shadow:0 0 0 6px rgba(124,109,250,0.15), 0 4px 24px var(--accent-glow);">
+          ${inisial}
+        </div>
+      </div>
+
+      <div class="result-name">${c.nama}</div>
+      <div class="result-nim">NIM: ${c.nim} &nbsp;·&nbsp; Kelas ${c.kelas.toUpperCase()}</div>
+      <div class="result-fact">💡 Fakta unik: <strong>${c.khusus}</strong></div>
+      <button class="btn-primary" onclick="startGame()">Main Lagi →</button>
+      <button class="btn-secondary" onclick="showScreen('screen-start')">Kembali ke Menu</button>
+    </div>`;
+}
+
+function showFail(){
+  showScreen("screen-result");
+  document.getElementById("result-card").innerHTML=`
+    <div style="text-align:center;">
+      <div class="fail-emoji">🤔</div>
+      <div class="fail-title">Tidak bisa menebak</div>
+      <p class="fail-desc">Mungkin data kurang lengkap atau jawabannya tidak konsisten. Coba ulangi!</p>
+      <button class="btn-primary" onclick="startGame()">Coba Lagi →</button>
+      <button class="btn-secondary" onclick="showScreen('screen-start')">Kembali ke Menu</button>
+    </div>`;
+}
+</script>
+</body>
+</html>
